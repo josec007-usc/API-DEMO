@@ -1,0 +1,19 @@
+{
+  "name": "Course Companion API",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Course Companion API",
+      "onAutoForward": "notify",
+      "visibility": "public"
+    }
+  },
+  "postCreateCommand": "corepack enable && pnpm install --frozen-lockfile --ignore-scripts",
+  "postStartCommand": "nohup pnpm start > /tmp/course-companion-api.log 2>&1 &",
+  "customizations": {
+    "vscode": {
+      "extensions": ["dbaeumer.vscode-eslint"]
+    }
+  }
+}
