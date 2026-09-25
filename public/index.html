@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Ask questions about your course syllabus and lessons." />
     <title>Course Companion</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -15,18 +12,24 @@
       <header class="topbar">
         <a class="brand" href="#" aria-label="Course Companion home">
           <span class="brand-mark" aria-hidden="true">C</span>
-          <span>Course Companion</span>
+          <span class="brand-name">Course Companion</span>
         </a>
-        <button id="settingsButton" class="settings-button" type="button" aria-haspopup="dialog">
-          <span class="status-dot" id="statusDot"></span>
-          <span id="statusLabel">Connect server</span>
-        </button>
+        <div class="topbar-actions">
+          <button id="settingsButton" class="settings-button" type="button" aria-haspopup="dialog">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusLabel">Connect server</span>
+          </button>
+          <a class="usc-affiliation" href="https://www.usc.edu/" target="_blank" rel="noopener">
+            <strong>USC</strong>
+            <span>University of<br />Southern California</span>
+          </a>
+        </div>
       </header>
 
       <main>
         <section class="hero" aria-labelledby="pageTitle">
-          <p class="eyebrow">Your AI study partner</p>
-          <h1 id="pageTitle">What can we learn<br /><span>together?</span></h1>
+          <p class="eyebrow">USC learning assistant</p>
+          <h1 id="pageTitle">Your course.<br /><span>Clear answers.</span></h1>
           <p class="hero-copy">Ask about the syllabus, class policies, assignments, or today’s lesson. Answers are grounded in your course materials.</p>
         </section>
 
@@ -85,4 +88,3 @@
     <script type="module" src="app.js"></script>
   </body>
 </html>
-
