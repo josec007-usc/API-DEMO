@@ -18,13 +18,15 @@ The browser sends a question to the Codespace. The server finds relevant course 
 5. Open the Codespace **Ports** panel. Confirm port `3000` is **Public**, then copy its forwarded address, such as `https://...-3000.app.github.dev`.
 6. Set `ALLOWED_ORIGINS` as a Codespaces secret containing the GitHub Pages origin, such as `https://YOUR-USERNAME.github.io`. Rebuild or restart the Codespace after adding it. To allow local testing too, use a comma-separated list.
 7. In repository **Settings → Pages**, select **GitHub Actions** as the source. Push to `main` or manually run the Pages workflow.
-8. Open the deployed page, choose **Connect server**, paste the public port URL, and test the connection.
+8. Put the public port URL into `public/config.js`, commit it, and push. The class webpage will connect to the instructor's server automatically.
 
-For a fixed class demo, put the Codespace URL in `public/config.js`. That URL is public by design; the Gemini key is not. A Codespace stops after inactivity, so start it before a demonstration. The page’s connection dialog makes it easy to update a changed Codespace URL without rebuilding the site.
+The Codespace URL in `public/config.js` is public by design; the Gemini key is not. A Codespace stops after inactivity, so start it before a demonstration. If the Codespace is recreated and its URL changes, update `public/config.js` and redeploy the page.
 
 ## Student template workflow
 
-Students can click **Use this template** on GitHub, create a repository, and repeat the setup above with their own Gemini key. Before distributing the repository, enable **Template repository** under the instructor repository’s General settings.
+Students use the instructor-hosted webpage and server without entering an API key or server URL. The instructor's Codespaces secret powers the class demo.
+
+The repository can separately serve as a downloadable teaching template. Students can click **Use this template** on GitHub to copy the code into a repository they own. GitHub does not copy the instructor's Codespaces secrets into repositories created from the template. Students only need to add their own key if an assignment asks them to deploy an independent copy. Before distributing the repository, enable **Template repository** under the instructor repository’s General settings.
 
 Never place a key in `public/config.js`, HTML, client-side JavaScript, a Git commit, or a chat message. Anything sent to GitHub Pages is readable by visitors.
 

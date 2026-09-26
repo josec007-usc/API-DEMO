@@ -68,6 +68,7 @@ button { cursor: pointer; }
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.8);
 }
+.server-status { cursor: default; }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 1px #a98700; }
 .status-dot.connected { background: #2f9d68; box-shadow: 0 0 0 4px rgba(47, 157, 104, 0.12); }
 

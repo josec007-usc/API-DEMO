@@ -4,19 +4,13 @@ const elements = {
   send: document.querySelector("#sendButton"),
   messages: document.querySelector("#messages"),
   suggestions: document.querySelector("#suggestions"),
-  settingsButton: document.querySelector("#settingsButton"),
-  dialog: document.querySelector("#settingsDialog"),
-  settingsForm: document.querySelector("#settingsForm"),
-  apiUrl: document.querySelector("#apiUrl"),
-  testButton: document.querySelector("#testButton"),
-  result: document.querySelector("#connectionResult"),
   statusDot: document.querySelector("#statusDot"),
   statusLabel: document.querySelector("#statusLabel")
 };
 
 const history = [];
 const localApiUrl = ["localhost", "127.0.0.1"].includes(window.location.hostname) ? window.location.origin : "";
-let apiBaseUrl = cleanUrl(localStorage.getItem("course-companion-api") || window.APP_CONFIG?.apiBaseUrl || localApiUrl);
+const apiBaseUrl = cleanUrl(window.APP_CONFIG?.apiBaseUrl || localApiUrl);
 
 function cleanUrl(value) {
   return String(value).trim().replace(/\/$/, "");
@@ -71,34 +65,26 @@ function addTypingIndicator() {
   return node;
 }
 
-async function checkConnection(url = apiBaseUrl) {
-  const target = cleanUrl(url);
-  if (!target) {
-    setConnectionStatus(false);
+async function checkConnection() {
+  if (!apiBaseUrl) {
+    setConnectionStatus(false, "Server not configured");
     return false;
   }
   try {
-    const response = await fetch(`${target}/api/health`, { signal: AbortSignal.timeout(8000) });
+    const response = await fetch(`${apiBaseUrl}/api/health`, { signal: AbortSignal.timeout(8000) });
     const data = await response.json();
     if (!response.ok || !data.ok) throw new Error(data.error || "Server unavailable");
-    const message = data.configured
-      ? `Connected · ${data.knowledgeFiles.length} source file(s)`
-      : "Connected, but GEMINI_API_KEY is missing";
     setConnectionStatus(data.configured, data.configured ? "Server connected" : "Key missing");
-    elements.result.textContent = message;
     return data.configured;
   } catch (error) {
     setConnectionStatus(false, "Server offline");
-    elements.result.textContent = `Could not connect: ${error.message}`;
     return false;
   }
 }
 
 async function sendMessage(message) {
   if (!apiBaseUrl) {
-    elements.apiUrl.value = "";
-    elements.dialog.showModal();
-    elements.result.textContent = "Connect your Codespace server before chatting.";
+    addMessage("model", "This copy of Course Companion has not been connected to an instructor server yet.");
     return;
   }
 
@@ -151,23 +137,6 @@ elements.input.addEventListener("input", () => {
 
 elements.suggestions.addEventListener("click", (event) => {
   if (event.target.matches("button")) sendMessage(event.target.textContent);
-});
-
-elements.settingsButton.addEventListener("click", () => {
-  elements.apiUrl.value = apiBaseUrl;
-  elements.result.textContent = "";
-  elements.dialog.showModal();
-});
-
-elements.testButton.addEventListener("click", () => checkConnection(elements.apiUrl.value));
-
-elements.settingsForm.addEventListener("submit", (event) => {
-  if (event.submitter?.value === "cancel") return;
-  event.preventDefault();
-  apiBaseUrl = cleanUrl(elements.apiUrl.value);
-  localStorage.setItem("course-companion-api", apiBaseUrl);
-  checkConnection();
-  elements.dialog.close();
 });
 
 checkConnection();

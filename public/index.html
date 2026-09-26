@@ -15,10 +15,10 @@
           <span class="brand-name">Course Companion</span>
         </a>
         <div class="topbar-actions">
-          <button id="settingsButton" class="settings-button" type="button" aria-haspopup="dialog">
+          <div id="serverStatus" class="settings-button server-status" role="status">
             <span class="status-dot" id="statusDot"></span>
-            <span id="statusLabel">Connect server</span>
-          </button>
+            <span id="statusLabel">Checking server</span>
+          </div>
           <a class="usc-affiliation" href="https://www.usc.edu/" target="_blank" rel="noopener">
             <strong>USC</strong>
             <span>University of<br />Southern California</span>
@@ -64,27 +64,7 @@
       <footer>Built as a classroom API + RAG demonstration.</footer>
     </div>
 
-    <dialog id="settingsDialog">
-      <form id="settingsForm" method="dialog">
-        <div class="dialog-heading">
-          <div>
-            <p class="eyebrow">Connection</p>
-            <h2>API server</h2>
-          </div>
-          <button class="close-button" value="cancel" aria-label="Close settings">×</button>
-        </div>
-        <p>Paste the public URL for port 3000 from your running GitHub Codespace. Do not paste an API key here.</p>
-        <label for="apiUrl">Codespace server URL</label>
-        <input id="apiUrl" type="url" placeholder="https://…-3000.app.github.dev" autocomplete="url" />
-        <p id="connectionResult" class="connection-result" role="status"></p>
-        <div class="dialog-actions">
-          <button class="secondary-button" id="testButton" type="button">Test connection</button>
-          <button class="primary-button" value="save" type="submit">Save</button>
-        </div>
-      </form>
-    </dialog>
-
-    <script src="config.js"></script>
-    <script type="module" src="app.js"></script>
+    <script src="config.js?v=instructor-1"></script>
+    <script type="module" src="app.js?v=instructor-1"></script>
   </body>
 </html>
