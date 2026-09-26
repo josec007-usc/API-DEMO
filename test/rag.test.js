@@ -6,6 +6,10 @@ test("tokenize removes common words and punctuation", () => {
   assert.deepEqual(tokenize("What is the late-work policy?"), ["late-work", "policy"]);
 });
 
+test("tokenize preserves single-digit assignment numbers", () => {
+  assert.deepEqual(tokenize("What is exercise 2?"), ["exercise", "2"]);
+});
+
 test("retrieval ranks a relevant passage above unrelated material", () => {
   const source = { title: "Syllabus", file: "syllabus.md" };
   const chunks = [
@@ -21,3 +25,11 @@ test("formatContext numbers retrieved sources", () => {
   assert.match(context, /\[Source 1: Syllabus \(syllabus.md\)\]/);
 });
 
+test("chunkDocument keeps Markdown heading sections separate", () => {
+  const source = { title: "Assignments", file: "assignments.md" };
+  const chunks = chunkDocument("# Assignments\n\n## Exercise 1\n\nBuild a greeting.\n\n## Exercise 2\n\nBuild a counter.", source);
+  assert.equal(chunks.length, 3);
+  assert.match(chunks[1].text, /Exercise 1[\s\S]*greeting/);
+  assert.doesNotMatch(chunks[1].text, /Exercise 2/);
+  assert.match(chunks[2].text, /Exercise 2[\s\S]*counter/);
+});

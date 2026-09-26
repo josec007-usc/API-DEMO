@@ -14,7 +14,7 @@ export function tokenize(text) {
     .normalize("NFKD")
     .replace(/[^a-z0-9\s-]/g, " ")
     .split(/\s+/)
-    .filter((word) => word.length > 1 && !STOP_WORDS.has(word));
+    .filter((word) => (word.length > 1 || /^\d$/.test(word)) && !STOP_WORDS.has(word));
 }
 
 function titleFromContent(content, filename) {
@@ -28,6 +28,13 @@ export function chunkDocument(content, source, maxCharacters = 1400) {
   let buffer = "";
 
   for (const paragraph of paragraphs) {
+    const isHeading = /^#{1,6}\s+/.test(paragraph);
+    if (isHeading && buffer) {
+      chunks.push(buffer);
+      buffer = paragraph;
+      continue;
+    }
+
     if (buffer && buffer.length + paragraph.length + 2 > maxCharacters) {
       chunks.push(buffer);
       buffer = "";
@@ -79,6 +86,7 @@ export async function loadKnowledgeBase(directory) {
 export function retrieve(query, chunks, limit = 4) {
   const queryTerms = tokenize(query);
   const queryPhrase = query.toLowerCase().trim();
+  const adjacentPhrases = queryTerms.slice(0, -1).map((term, index) => `${term} ${queryTerms[index + 1]}`);
 
   return chunks
     .map((chunk) => {
@@ -90,6 +98,9 @@ export function retrieve(query, chunks, limit = 4) {
         const count = frequencies.get(term) || 0;
         if (count) score += 1 + Math.log(count);
         if (chunk.source.title.toLowerCase().includes(term)) score += 1.5;
+      }
+      for (const phrase of adjacentPhrases) {
+        if (chunk.text.toLowerCase().includes(phrase)) score += 3;
       }
       if (queryPhrase.length > 3 && chunk.text.toLowerCase().includes(queryPhrase)) score += 5;
 
