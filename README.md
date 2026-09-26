@@ -9,6 +9,8 @@ The project has two pieces:
 
 The browser sends a question to the Codespace. The server finds relevant course passages, sends only those passages and recent chat history to Gemini, then returns the answer and source labels.
 
+The tutor is configured as a closed-book assistant. It must ground technical and course claims in the retrieved materials, cite those materials, coach rather than complete graded work, and clearly escalate unsupported or overly complex questions to the professor. Questions with no retrieved course support are stopped by the server before they reach Gemini. The server also rejects generated answers that omit citations or cite source numbers that were not retrieved.
+
 ## Instructor setup
 
 1. Add the real syllabus and lesson plans to `knowledge/` as Markdown (`.md`) or plain text (`.txt`). Delete the two example files when they are no longer useful.
