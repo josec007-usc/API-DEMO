@@ -1,5 +1,6 @@
 // Instructor-hosted API used by the class website. This URL is public by design;
-// the Gemini key remains in the Codespace environment and is never sent here.
+// the Gemini key remains in Render's environment and is never sent here.
 window.APP_CONFIG = {
-  apiBaseUrl: "https://cautious-capybara-69r59467gpqqcxxpp-3000.app.github.dev"
+  // Add the permanent Render URL after the first deployment, without a trailing slash.
+  apiBaseUrl: ""
 };

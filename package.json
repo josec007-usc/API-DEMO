@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.19.0",
-  "description": "A student-friendly Gemini RAG chatbot with a GitHub Pages client and Codespaces server.",
+  "description": "A student-friendly Gemini RAG chatbot with a GitHub Pages client and Render server.",
   "scripts": {
     "dev": "node --watch server/index.js",
     "start": "node server/index.js",

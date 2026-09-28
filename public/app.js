@@ -11,6 +11,7 @@ const elements = {
 const history = [];
 const localApiUrl = ["localhost", "127.0.0.1"].includes(window.location.hostname) ? window.location.origin : "";
 const apiBaseUrl = cleanUrl(window.APP_CONFIG?.apiBaseUrl || localApiUrl);
+const connectionRetryDelays = [0, 8_000, 15_000, 20_000, 25_000];
 
 function cleanUrl(value) {
   return String(value).trim().replace(/\/$/, "");
@@ -65,21 +66,31 @@ function addTypingIndicator() {
   return node;
 }
 
+function wait(milliseconds) {
+  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+}
+
 async function checkConnection() {
   if (!apiBaseUrl) {
     setConnectionStatus(false, "Server not configured");
     return false;
   }
-  try {
-    const response = await fetch(`${apiBaseUrl}/api/health`, { signal: AbortSignal.timeout(8000) });
-    const data = await response.json();
-    if (!response.ok || !data.ok) throw new Error(data.error || "Server unavailable");
-    setConnectionStatus(data.configured, data.configured ? "Server connected" : "Key missing");
-    return data.configured;
-  } catch (error) {
-    setConnectionStatus(false, "Server offline");
-    return false;
+
+  for (let attempt = 0; attempt < connectionRetryDelays.length; attempt += 1) {
+    if (connectionRetryDelays[attempt]) await wait(connectionRetryDelays[attempt]);
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/health`, { signal: AbortSignal.timeout(10_000) });
+      const data = await response.json();
+      if (!response.ok || !data.ok) throw new Error(data.error || "Server unavailable");
+      setConnectionStatus(data.configured, data.configured ? "Server connected" : "Key missing");
+      return data.configured;
+    } catch (error) {
+      const hasMoreAttempts = attempt < connectionRetryDelays.length - 1;
+      setConnectionStatus(false, hasMoreAttempts ? "Server waking up…" : "Server offline");
+    }
   }
+
+  return false;
 }
 
 async function sendMessage(message) {
