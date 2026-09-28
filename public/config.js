@@ -2,5 +2,5 @@
 // the Gemini key remains in Render's environment and is never sent here.
 window.APP_CONFIG = {
   // Add the permanent Render URL after the first deployment, without a trailing slash.
-  apiBaseUrl: ""
+  apiBaseUrl:https://course-companion-api-nsps.onrender.com ""
 };
