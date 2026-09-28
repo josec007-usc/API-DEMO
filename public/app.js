@@ -13,6 +13,15 @@ const localApiUrl = ["localhost", "127.0.0.1"].includes(window.location.hostname
 const apiBaseUrl = cleanUrl(window.APP_CONFIG?.apiBaseUrl || localApiUrl);
 const connectionRetryDelays = [0, 8_000, 15_000, 20_000, 25_000];
 
+class ApiResponseError extends Error {
+  constructor(message, status, code) {
+    super(message);
+    this.name = "ApiResponseError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
 function cleanUrl(value) {
   return String(value).trim().replace(/\/$/, "");
 }
@@ -113,15 +122,20 @@ async function sendMessage(message) {
       body: JSON.stringify({ message, history })
     });
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "The request failed.");
+    if (!response.ok) throw new ApiResponseError(data.error || "The request failed.", response.status, data.code);
     typing.remove();
     addMessage("model", data.answer, data.sources);
+    setConnectionStatus(true, "Server connected");
     history.push({ role: "user", text: message }, { role: "model", text: data.answer });
     if (history.length > 16) history.splice(0, history.length - 16);
   } catch (error) {
     typing.remove();
-    addMessage("model", `I couldn’t reach the course server. ${error.message}`);
-    setConnectionStatus(false, "Check server");
+    if (error instanceof ApiResponseError) {
+      addMessage("model", error.message);
+    } else {
+      addMessage("model", `I couldn’t reach the course server. ${error.message}`);
+      setConnectionStatus(false, "Server offline");
+    }
   } finally {
     elements.send.disabled = false;
     elements.input.focus();

@@ -3,9 +3,11 @@ import path from "node:path";
 
 const SUPPORTED_EXTENSIONS = new Set([".md", ".txt"]);
 const STOP_WORDS = new Set([
-  "a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "how",
-  "i", "in", "is", "it", "of", "on", "or", "that", "the", "this", "to",
-  "was", "what", "when", "where", "which", "who", "will", "with", "you", "your"
+  "a", "about", "an", "and", "are", "as", "at", "be", "by", "can", "could",
+  "explain", "for", "from", "help", "how", "i", "in", "is", "it", "learn",
+  "make", "need", "of", "on", "or", "please", "show", "that", "the", "this",
+  "to", "was", "what", "when", "where", "which", "who", "will", "with", "would",
+  "you", "your"
 ]);
 
 export function tokenize(text) {
@@ -85,6 +87,7 @@ export async function loadKnowledgeBase(directory) {
 
 export function retrieve(query, chunks, limit = 4) {
   const queryTerms = tokenize(query);
+  const uniqueQueryTerms = [...new Set(queryTerms)];
   const queryPhrase = query.toLowerCase().trim();
   const adjacentPhrases = queryTerms.slice(0, -1).map((term, index) => `${term} ${queryTerms[index + 1]}`);
 
@@ -94,21 +97,39 @@ export function retrieve(query, chunks, limit = 4) {
       for (const term of chunk.terms) frequencies.set(term, (frequencies.get(term) || 0) + 1);
 
       let score = 0;
-      for (const term of new Set(queryTerms)) {
+      let matchedTerms = 0;
+      for (const term of uniqueQueryTerms) {
         const count = frequencies.get(term) || 0;
-        if (count) score += 1 + Math.log(count);
+        if (count) {
+          matchedTerms += 1;
+          score += 1 + Math.log(count);
+        }
         if (chunk.source.title.toLowerCase().includes(term)) score += 1.5;
       }
+      let phraseMatches = 0;
       for (const phrase of adjacentPhrases) {
-        if (chunk.text.toLowerCase().includes(phrase)) score += 3;
+        if (chunk.text.toLowerCase().includes(phrase)) {
+          phraseMatches += 1;
+          score += 3;
+        }
       }
-      if (queryPhrase.length > 3 && chunk.text.toLowerCase().includes(queryPhrase)) score += 5;
+      const exactMatch = queryPhrase.length > 3 && chunk.text.toLowerCase().includes(queryPhrase);
+      if (exactMatch) score += 5;
 
-      return { ...chunk, score: Number(score.toFixed(3)) };
+      // For multi-term questions, a single generic overlap such as "app" is not
+      // enough evidence to send the question to the model. A one-term search is
+      // still useful for distinctive course vocabulary such as "closures".
+      const relevant = exactMatch
+        || phraseMatches > 0
+        || matchedTerms >= 2
+        || (uniqueQueryTerms.length === 1 && matchedTerms === 1);
+
+      return { ...chunk, score: Number(score.toFixed(3)), relevant };
     })
-    .filter((chunk) => chunk.score > 0)
+    .filter((chunk) => chunk.relevant)
     .sort((a, b) => b.score - a.score)
-    .slice(0, limit);
+    .slice(0, limit)
+    .map(({ relevant: _relevant, ...chunk }) => chunk);
 }
 
 export function formatContext(matches) {

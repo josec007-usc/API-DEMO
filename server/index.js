@@ -6,6 +6,7 @@ import cors from "cors";
 import helmet from "helmet";
 import { GoogleGenAI } from "@google/genai";
 import { formatContext, loadKnowledgeBase, retrieve } from "./rag.js";
+import { isTransientAiError, withAiRetry } from "./retry.js";
 import {
   buildTutorPrompt,
   GROUNDING_FAILURE_RESPONSE,
@@ -86,7 +87,7 @@ app.post("/api/chat", async (req, res) => {
   const context = formatContext(matches);
 
   try {
-    const response = await ai.models.generateContent({
+    const response = await withAiRetry(() => ai.models.generateContent({
       model,
       contents: [
         ...safeHistory,
@@ -100,7 +101,7 @@ app.post("/api/chat", async (req, res) => {
         temperature: 0.15,
         maxOutputTokens: 900
       }
-    });
+    }));
 
     const answer = response.text || "";
     const validation = validateTutorAnswer(answer, matches.length);
@@ -125,6 +126,12 @@ app.post("/api/chat", async (req, res) => {
     });
   } catch (error) {
     console.error("Gemini request failed:", error);
+    if (isTransientAiError(error)) {
+      return res.status(503).json({
+        error: "Gemini is temporarily busy. Please wait a moment and try again.",
+        code: "MODEL_BUSY"
+      });
+    }
     res.status(502).json({ error: "Gemini could not answer right now. Check the server log and API key." });
   }
 });

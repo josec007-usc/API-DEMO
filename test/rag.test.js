@@ -20,6 +20,20 @@ test("retrieval ranks a relevant passage above unrelated material", () => {
   assert.equal(matches[0].text, "Late assignments receive a ten percent deduction.");
 });
 
+test("retrieval rejects an unrelated question with only one generic overlap", () => {
+  const source = { title: "iOS Development", file: "ios.md" };
+  const chunks = chunkDocument("Build an iOS app using Swift and Xcode.", source);
+  const matches = retrieve("Can you help me make an app for baking a cake?", chunks);
+  assert.deepEqual(matches, []);
+});
+
+test("retrieval preserves useful single-term course searches", () => {
+  const source = { title: "Swift", file: "swift.md" };
+  const chunks = chunkDocument("Closures capture values from their surrounding context.", source);
+  const matches = retrieve("closures", chunks);
+  assert.equal(matches.length, 1);
+});
+
 test("formatContext numbers retrieved sources", () => {
   const context = formatContext([{ text: "Office hours are Friday.", source: { title: "Syllabus", file: "syllabus.md" } }]);
   assert.match(context, /\[Source 1: Syllabus \(syllabus.md\)\]/);
