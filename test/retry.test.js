@@ -29,8 +29,9 @@ test("AI retry does not repeat permanent client errors", async () => {
   assert.equal(attempts, 1);
 });
 
-test("AI retry classifies rate limits and server errors as transient", () => {
-  assert.equal(isTransientAiError({ status: 429 }), true);
+test("AI retry does not treat quota limits as transient", () => {
+  assert.equal(isTransientAiError({ status: 429 }), false);
+  assert.equal(isTransientAiError({ status: 408 }), true);
   assert.equal(isTransientAiError({ status: 503 }), true);
   assert.equal(isTransientAiError({ status: 403 }), false);
 });

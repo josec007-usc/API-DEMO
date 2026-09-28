@@ -1,4 +1,4 @@
-const TRANSIENT_STATUS_CODES = new Set([408, 429]);
+const TRANSIENT_STATUS_CODES = new Set([408]);
 
 export function aiErrorStatus(error) {
   const status = Number(error?.status ?? error?.code ?? error?.error?.code);

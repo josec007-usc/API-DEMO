@@ -6,7 +6,7 @@ import cors from "cors";
 import helmet from "helmet";
 import { GoogleGenAI } from "@google/genai";
 import { formatContext, loadKnowledgeBase, retrieve } from "./rag.js";
-import { isTransientAiError, withAiRetry } from "./retry.js";
+import { aiErrorStatus, isTransientAiError, withAiRetry } from "./retry.js";
 import {
   buildTutorPrompt,
   GROUNDING_FAILURE_RESPONSE,
@@ -126,6 +126,12 @@ app.post("/api/chat", async (req, res) => {
     });
   } catch (error) {
     console.error("Gemini request failed:", error);
+    if (aiErrorStatus(error) === 429) {
+      return res.status(429).json({
+        error: "The class has reached its Gemini usage limit. Please try again after the quota resets.",
+        code: "AI_QUOTA_LIMIT"
+      });
+    }
     if (isTransientAiError(error)) {
       return res.status(503).json({
         error: "Gemini is temporarily busy. Please wait a moment and try again.",
